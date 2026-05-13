@@ -168,6 +168,82 @@ export function calculateSettlement(input: CalcInput): SettlementCalculation {
     };
   }
 
+  // ---------- vs deal (guarantee vs % of net) ----------
+  if (deal.dealType === "vs") {
+    const guarantee = deal.guaranteeAmount ?? 0;
+    const percentage = deal.percentage ?? 0.85;
+    const expenseCap = deal.expenseCap ?? totalExpenses;
+
+    // Apply expense cap — use actual expenses or cap, whichever is lower
+    const cappedExpenses = Math.min(totalExpenses, expenseCap);
+
+    // Net after fees and capped expenses
+    const netAfterExpenses = netBoxOffice - cappedExpenses;
+
+    // Artist's percentage share of net
+    const percentageShare = netAfterExpenses * percentage;
+
+    // The "vs" — whichever is greater
+    const vsResult = Math.max(guarantee, percentageShare);
+    const artistGetsPercentage = percentageShare >= guarantee;
+
+    const bonusResult = applyBonuses(parseBonuses(deal), {
+      gross: grossBoxOffice,
+      tickets,
+      capacity: venueCapacity,
+    });
+
+    const totalToArtist = vsResult + bonusResult.totalApplied;
+
+    return {
+      supported: true,
+      grossBoxOffice,
+      netBoxOffice,
+      totalExpenses: cappedExpenses,
+      totalToArtist,
+      steps: [
+        {
+          label: "Gross box office",
+          value: grossBoxOffice,
+        },
+        {
+          label: "Less ticketing fees",
+          value: -totalFees,
+          note: `Net box office: ${netBoxOffice.toLocaleString("en-US", { style: "currency", currency: "USD" })}`,
+        },
+        {
+          label: "Less expenses (passed through)",
+          value: -cappedExpenses,
+          note: expenseCap < totalExpenses
+            ? `Capped at ${expenseCap.toLocaleString("en-US", { style: "currency", currency: "USD" })} — venue absorbs the rest`
+            : "Actual expenses, no cap applied",
+        },
+        {
+          label: `Artist's share (${(percentage * 100).toFixed(0)}% of net)`,
+          value: percentageShare,
+          note: `Net after expenses: ${netAfterExpenses.toLocaleString("en-US", { style: "currency", currency: "USD" })}`,
+        },
+        {
+          label: artistGetsPercentage
+            ? `✓ Percentage share wins vs guarantee (${guarantee.toLocaleString("en-US", { style: "currency", currency: "USD" })})`
+            : `✓ Guarantee wins vs percentage share (${percentageShare.toLocaleString("en-US", { style: "currency", currency: "USD" })})`,
+          value: vsResult,
+          note: artistGetsPercentage
+            ? "Show performed well — artist earns the percentage"
+            : "Show underperformed — guarantee is the floor",
+        },
+        ...bonusResult.applied.map((b) => ({
+          label: b.label,
+          value: b.amount,
+          note: b.reason,
+        })),
+      ],
+      finalFormula: `max(guarantee ${guarantee}, ${(percentage * 100).toFixed(0)}% of net ${netAfterExpenses.toFixed(2)}) = ${vsResult.toFixed(2)}`,
+      bonusesApplied: bonusResult.applied,
+      bonusesNotTriggered: bonusResult.notTriggered,
+    };
+  }
+  
   // ---------- everything else: not supported ----------
   const friendlyName: Record<Deal["dealType"], string> = {
     flat: "Flat guarantee",

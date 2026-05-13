@@ -29,6 +29,7 @@ import {
 } from "@/lib/format";
 import type { Settlement, Recoup } from "@/db/schema";
 import { Logomark } from "@/components/brand/logo";
+import { DealParser } from "@/components/ui/DealParser";
 
 const RECOUP_LABELS: Record<Recoup["category"], string> = {
   marketing: "Marketing",
@@ -448,6 +449,7 @@ function UnsupportedDeal({
               <div className="text-[12.5px] text-ink-800 bg-canvas-soft rounded-lg p-4 ring-1 ring-ink-200/60 leading-relaxed">
                 {deal.dealNotesFreetext}
               </div>
+              <DealParser dealNotes={deal.dealNotesFreetext} />
             </div>
           )}
         </CardContent>
