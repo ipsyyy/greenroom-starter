@@ -203,10 +203,6 @@ export function calculateSettlement(input: CalcInput): SettlementCalculation {
       totalToArtist,
       steps: [
         {
-          label: "Gross box office",
-          value: grossBoxOffice,
-        },
-        {
           label: "Less ticketing fees",
           value: -totalFees,
           note: `Net box office: ${netBoxOffice.toLocaleString("en-US", { style: "currency", currency: "USD" })}`,
