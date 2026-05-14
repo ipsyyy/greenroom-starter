@@ -19,6 +19,7 @@ import {
 import { StatusBadge, DealTypeBadge, PlainBadge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { parseBonuses } from "@/lib/dealMath";
+import { DealRiskFlag } from "@/components/ui/DealRiskFlag";
 import {
   formatMoney,
   formatMoneyCompact,
@@ -139,6 +140,12 @@ export default async function ShowDetailPage({
       </div>
 
       <div className="px-12 pb-12">
+        {deal?.dealNotesFreetext && (
+          <DealRiskFlag
+            dealNotes={deal.dealNotesFreetext}
+            showDate={show.date}
+          />
+        )}
         {show.internalNotes && (
           <div className="mb-8 mt-1 rounded-lg bg-amber-50/50 ring-1 ring-amber-200/60 p-5 flex gap-3">
             <AlertCircle className="h-4 w-4 text-amber-700 mt-0.5 shrink-0" />
