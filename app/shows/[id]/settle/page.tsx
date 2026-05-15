@@ -108,6 +108,25 @@ export default async function SettlePage({
         </div>
       </div>
 
+    {/* Ghost dispute detection */}
+      {isDisputed && settlement?.signoffText && settlement.signoffText.trim() !== "" && (
+        <div className="mb-8 rounded-lg border border-amber-200/60 bg-amber-50/40 p-5 flex gap-3">
+          <AlertTriangle className="h-4 w-4 text-amber-700 mt-0.5 shrink-0" />
+          <div>
+            <div className="text-[13px] font-semibold text-amber-800">
+              ⚠ Ghost dispute detected
+            </div>
+            <p className="text-[12.5px] text-ink-600 mt-1 leading-relaxed">
+              This settlement is marked disputed but the artist team has already signed off —{" "}
+              <span className="font-medium text-ink-800">
+                &ldquo;{settlement.signoffText}&rdquo;
+              </span>
+              . This dispute may already be resolved. Review and close if confirmed.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Disputed callout */}
       {isDisputed && disputedRecoupValue > 0 && (
         <div className="mb-8 rounded-lg border border-rose-200/60 bg-rose-50/40 p-5 flex gap-3">
